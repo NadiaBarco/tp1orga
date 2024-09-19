@@ -70,12 +70,12 @@ ej1:
 	push rbp
 	mov rbp, rsp
 
-	sub rsp, 24
+	sub rsp, 32
 
-	mov [rsp], rsi ; guardo el puntero a la imgaen src
-	mov [rsp + 8], rdi ; guardo el punt dst
-	mov [rsp+16], rdx
-	mov [rsp+24], rcx
+	mov [rbp-8], rsi ; guardo el puntero a la imgaen src
+	mov [rbp -16], rdi ; guardo el punt dst
+	mov [rbp-24], rdx ; largo
+	mov [rbp-32], rcx ;ancho
 	xor rax, rax
 
 
@@ -87,7 +87,7 @@ ej1:
 		cmp rax,0
 		je fin
 		pxor xmm1, xmm1
-		movdqu xmm0, [rsi]
+		movdqu xmm0, [rbp-8]
 		movdqu xmm3, [filtro_gris]; [filR,filG,filB,filA]
 		punpcklbw xmm0, xmm1 ;XMM1:[000R,000G,000B,000A]
 		cvtdq2ps xmm0, xmm0 
@@ -98,8 +98,8 @@ ej1:
 		cvttps2dq xmm0,xmm0
 
 
-		PACKSSDW xmm0, xmm0 ; Convierto de double word a word
-		PACKUSWB xmm0, xmm0 ; Convierto de word a byte
+		PACKSSDW xmm0, xmm0 ; double word a word
+		PACKUSWB xmm0, xmm0 ; word a byte
 		movdqu [rdi], xmm0
 
 
@@ -113,7 +113,7 @@ ej1:
 
 	fin:
 
-	mov rax, [rsp+8]
+	mov rax, [rbp-8]
 	add rsp, 32
 	pop rbp
 	ret
