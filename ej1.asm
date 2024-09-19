@@ -89,6 +89,7 @@ ej1:
 		pxor xmm1, xmm1
 		movdqu xmm0, [rbp-8]
 		movdqu xmm3, [filtro_gris]; [filR,filG,filB,filA]
+               ; filtro alpha
 		punpcklbw xmm0, xmm1 ;XMM1:[000R,000G,000B,000A]
 		cvtdq2ps xmm0, xmm0 
 
@@ -105,7 +106,7 @@ ej1:
 
 			add rsi, 4
 			add rdi, 4
-			dec eax
+			dec rax
 			jmp loop1
 			
 
