@@ -2,8 +2,8 @@ section .rodata
 ; Poner acá todas las máscaras y coeficientes que necesiten para el filtro
 ;align 16
 
-filtro_gris dd  0,0.2126, 0.7152, 0.0722
-filtro_alpha:db 0, 0xff ,0xff,0xff,0, 0xff ,0xff,0xff,0, 0xff ,0xff,0xff,0, 0xff ,0xff,0xff
+filtro_gris dd 0.2126, 0.7152, 0.0722 ,0
+filtro_alpha: db  0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255
 section .text
 
 ; Marca un ejercicio como aún no completado (esto hace que no corran sus tests)
@@ -70,12 +70,10 @@ ej1:
 	push rbp
 	mov rbp, rsp
 
-	sub rsp, 32
+	sub rsp, 16
 
 	mov [rbp-8], rsi ; guardo el puntero a la imgaen src
 	mov [rbp -16], rdi ; guardo el punt dst
-	mov [rbp-24], rdx ; largo
-	mov [rbp-32], rcx ;ancho
 	xor rax, rax
 
 
@@ -84,38 +82,48 @@ ej1:
 	shr rax,2
 
 	loop1:
+		
 		cmp rax,0
 		je fin
 		pxor xmm1, xmm1
-		movdqu xmm0, [rbp-8]
+		movdqu xmm0, [rsi]
 		movdqu xmm3, [filtro_gris]; [filR,filG,filB,filA]
-               ; filtro alpha
-		punpcklbw xmm0, xmm1 ;XMM1:[000R,000G,000B,000A]
-		cvtdq2ps xmm0, xmm0 
+		movdqu xmm7, [filtro_alpha]
 
+		PMOVZXBD xmm0, xmm0 
+		;andps
+		;xmm0[r1,,g1,b1]
+		;[R1,G1,B1,A1,R2,G2,B2,A2,R3,G3,B3,A3,R4,G4,B4,A4]
+		;R1 0 G1 0 B1 0
+		;
+		;XMM0:[000R,000G,000B,000A] 
+		cvtdq2ps xmm0, xmm0 
+		andps xmm0, xmm7 
 		mulps xmm0, xmm3
 		haddps xmm0,xmm0
 		haddps xmm0,xmm0
 		cvttps2dq xmm0,xmm0
 
 
-		PACKSSDW xmm0, xmm0 ; double word a word
+
+		PACKuSDw xmm0, xmm0 ; double word a word
 		PACKUSWB xmm0, xmm0 ; word a byte
+		
+		por xmm0, xmm7 
 		movdqu [rdi], xmm0
 
 
 			add rsi, 4
+			mov [rbp-8], rsi
 			add rdi, 4
+			mov [rbp-16], rdi
 			dec rax
 			jmp loop1
 			
 
-
-
 	fin:
 
-	mov rax, [rbp-8]
-	add rsp, 32
+	mov rdi, [rbp-8]
+	add rsp, 16
 	pop rbp
 	ret
-
