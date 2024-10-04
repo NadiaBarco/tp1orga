@@ -69,11 +69,14 @@ public class ListaEnlazada<T> implements Secuencia<T> {
             nodoActual=nodoActual.next;
             ++count;
         }
+        nodoActual.next=nodoActual.anterior.next;
+        nodoActual.anterior=nodoActual.next.anterior;
+        nodoActual=nodoActual.next;
         
     }
 
     public void modificarPosicion(int indice, T elem) {
-        throw new UnsupportedOperationException("No implementada aun");
+        ;
     }
 
     public ListaEnlazada(ListaEnlazada<T> lista) {
